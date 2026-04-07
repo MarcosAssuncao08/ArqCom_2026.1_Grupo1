@@ -1,0 +1,3 @@
+Comecei a sketch com a configuração do teclado para aceitar input de teclas
+
+A próxima etapa é configurar a placa para o formato de input necessário para dar os comandos
