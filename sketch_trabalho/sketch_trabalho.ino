@@ -59,7 +59,7 @@ void loop() {
     Serial.print("Buffer: ");
     Serial.println(bufferSeq);
 
-    // Se buffer começa e termina com '#' e tem mais que 1 char, tenta parsear
+    // Se buffer começa e termina com '#' e tem mais que 1 char, tenta interpretar a instrução
     if (bufferSeq.length() > 1 && bufferSeq.charAt(0) == '#' && bufferSeq.charAt(bufferSeq.length() - 1) == '#') {
       interpretarInstrucao(bufferSeq);
       bufferSeq = "";  // limpa para próxima instrução
@@ -70,76 +70,92 @@ void loop() {
   delay(10);  // Evita sobrecarga do teclado
 }
 
-// Função que faz o parsing da string completa (ex: "#3##12#")
-void interpretarInstrucao(const String& seq) {
-  // Divide por '#' e coleta tokens não vazios
-  // Ex: "#3##12#" -> ["", "3", "", "12", ""] -> tokens: "3", "12"
-  int comprimento = seq.length();
-  String token = "";
-  String tokens[4];  // esperamos no máximo opcode + 1 operando; mas deixei 4 para segurança
-  int tcount = 0;
+// Função que interpreta uma sequência delimitada por '#' e extrai opcode e operando.
+// Exemplo: "#3##12#"  -> opcode = 3, operando = "12"
+void interpretarInstrucao(const String& sequencia) {
+  // --- Preparação de variáveis ---
+  int tamanho = sequencia.length();  // comprimento da string recebida
+  String tokenAtual = "";            // acumula caracteres entre '#'s
+  String tokens[4];                  // armazena tokens não vazios (opcode, operando, ...)
+  int contadorTokens = 0;            // quantos tokens válidos foram coletados
 
-  for (int i = 0; i < comprimento; ++i) {
-    char c = seq.charAt(i);
+  // --- Varre cada caractere da sequência e separa por '#' ---
+  for (int i = 0; i < tamanho; ++i) {
+    char c = sequencia.charAt(i);
+
     if (c == '#') {
-      if (token.length() > 0) {
-        if (tcount < 4) tokens[tcount++] = token;
-        token = "";
+      // Encontramos um delimitador '#'
+      if (tokenAtual.length() > 0) {
+        // Se havia caracteres acumulados, salvamos como token
+        if (contadorTokens < 4) {
+          tokens[contadorTokens] = tokenAtual;
+          contadorTokens++;
+        }
+        tokenAtual = "";  // zera para começar novo token
       } else {
-        // token vazio entre hashes -> ignora
+        // tokenAtual vazio significa que havia "##" ou '#' no início/fim:
+        // ignoramos (não criamos token vazio)
       }
     } else {
-      token += c;
+      // Caractere normal: acumula no token atual
+      tokenAtual += c;
     }
   }
-  // Caso haja token residual (não esperado se termina com '#')
-  if (token.length() > 0 && tcount < 4) {
-    tokens[tcount++] = token;
+
+  // --- Se sobrou um token no final (sequência não terminou com '#') ---
+  if (tokenAtual.length() > 0 && contadorTokens < 4) {
+    tokens[contadorTokens] = tokenAtual;
+    contadorTokens++;
   }
 
-  if (tcount == 0) {
+  // --- Se não houve tokens válidos, aborta ---
+  if (contadorTokens == 0) {
     Serial.println("Instrução vazia detectada. Ignorando.");
     return;
   }
 
-  // Primeiro token -> opcode (decimal)
-  String opcodeStr = tokens[0];
-  int opcode = opcodeStr.toInt();  // toInt retorna 0 se não-numérico; validaremos
-  bool opcodeIsNumber = isNumeric(opcodeStr);
+  // --- Interpreta o primeiro token como opcode (decimal) ---
+  String textoOpcode = tokens[0];
+  bool opcodeEhNumerico = isNumeric(textoOpcode);  // função utilitária (ver abaixo)
 
-  if (!opcodeIsNumber) {
+  if (!opcodeEhNumerico) {
     Serial.print("Opcode inválido (não numérico): ");
-    Serial.println(opcodeStr);
+    Serial.println(textoOpcode);
     return;
   }
 
+  int opcode = textoOpcode.toInt();  // converte para inteiro
+
+  // Valida intervalo do opcode (0..15)
   if (opcode < 0 || opcode > 15) {
     Serial.print("Opcode fora do intervalo 0-15: ");
     Serial.println(opcode);
     return;
   }
 
-  const char* mnem = MNEMONICOS[opcode];
+  // --- Recupera mnemônico a partir do opcode (array MNEMONICOS definido globalmente) ---
+  const char* mnemonico = MNEMONICOS[opcode];
 
-  // Operando (se houver)
-  String operandoStr = "";
-  if (tcount >= 2) {
-    operandoStr = tokens[1];
+  // --- Se houver segundo token, trata como operando ---
+  String textoOperando = "";
+  if (contadorTokens >= 2) {
+    textoOperando = tokens[1];
   }
 
-  // Saída formatada
+  // --- Impressão formatada para debug / verificação ---
   Serial.println("=== Instrução reconhecida ===");
   Serial.print("Opcode (decimal): ");
   Serial.println(opcode);
   Serial.print("Mnemônico: ");
-  Serial.println(mnem);
+  Serial.println(mnemonico);
 
-  if (operandoStr.length() > 0) {
+  if (textoOperando.length() > 0) {
     Serial.print("Operando (texto): ");
-    Serial.println(operandoStr);
-    if (isNumeric(operandoStr)) {
+    Serial.println(textoOperando);
+
+    if (isNumeric(textoOperando)) {
       Serial.print("Operando (decimal): ");
-      Serial.println(operandoStr.toInt());
+      Serial.println(textoOperando.toInt());
     } else {
       Serial.println("Operando não é numérico (mantido como string).");
     }
@@ -147,17 +163,17 @@ void interpretarInstrucao(const String& seq) {
     Serial.println("Sem operando.");
   }
 
-  // Aqui você pode chamar a função que executa a instrução, por exemplo:
-  // executeInstruction(opcode, operandoStr);
+  // --- Aqui você pode chamar a rotina que executa a instrução ---
+  // executeInstruction(opcode, textoOperando);
 }
 
-// Função utilitária: verifica se string é composta só por dígitos (0-9) e opcionalmente sinal
+// Função utilitária: verifica se uma String representa um número inteiro (opcionalmente com sinal)
 bool isNumeric(const String& s) {
   if (s.length() == 0) return false;
   for (unsigned int i = 0; i < s.length(); ++i) {
     char c = s.charAt(i);
     if (i == 0 && (c == '+' || c == '-')) {
-      if (s.length() == 1) return false;
+      if (s.length() == 1) return false;  // apenas sinal não é número
       continue;
     }
     if (c < '0' || c > '9') return false;
