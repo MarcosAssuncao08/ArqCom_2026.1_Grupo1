@@ -53,7 +53,7 @@ const char* MNEMONICOS[16] = {
 // --------------------------------------
 // Buffer global para entrada do teclado
 // --------------------------------------
-String bufferSeq = "";  // acumula sequência de teclas até formar instrução completa
+String bufferEntrada = "";  // acumula sequência de teclas até formar instrução completa
 
 // ---------------------------------------------
 // Struct que representa instrução interpretada
@@ -108,7 +108,7 @@ void loop() {
 
     // Condição para considerar instrução completa:
     // começa com '#' e termina com '#' e tem mais de 1 caractere
-    if (bufferSeq.length() > 1 && bufferSeq.charAt(0) == '#' && bufferSeq.charAt(bufferSeq.length() - 1) == '#') {
+    if (bufferEntrada.length() > 1 && bufferEntrada.charAt(0) == '#' && bufferEntrada.charAt(bufferEntrada.length() - 1) == '#') {
 
       // Interpreta a sequência e recebe um struct com dados
       InstrucaoInterpretada instrucao = interpretarInstrucao(bufferEntrada);
@@ -184,7 +184,7 @@ InstrucaoInterpretada interpretarInstrucao(const String& sequencia) {
   if (!ehNumerico(textoOpcode)) {
     Serial.println("Opcode inválido (não numérico): ");
     Serial.println(textoOpcode);
-    return resultado;
+    return resultado; // resultado.valida == false
   }
 
   int opcode = textoOpcode.toInt();  // converte para inteiro
@@ -192,7 +192,7 @@ InstrucaoInterpretada interpretarInstrucao(const String& sequencia) {
   if (opcode < 0 || opcode > 15) {
     Serial.print("Opcode fora do intervalo 0-15: ");
     Serial.println(opcode);
-    return resultado;
+    return resultado; // resultado.valida == false
   }
 
   // --- recupera mnemônico (opcional, para legibilidade e reuso) ---
