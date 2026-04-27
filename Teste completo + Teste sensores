@@ -1,1 +1,51 @@
+1. TESTE COMPLETO
+#
+2B5D
+3B3D
+10D
+15D
+#
+A
+*
+*
+*
+*
 
+👉 Isso testa:
+
+LOADK → carrega valor no ACC
+ADDK → operação da ULA
+DISP → saída (display)
+HALT → parada
+
+✔ Aqui você prova:
+
+ULA funcionando
+ACC sendo usado
+ciclo de instrução funcionando
+
+
+
+
+2. TESTE SENSOR + ALERT
+#
+1D
+11D
+15D
+#
+A
+*
+*
+*
+
+👉 Isso testa:
+
+READ → sensor
+ALERT → decisão com base no ACC
+HALT → parada
+
+✔ Aqui você prova:
+
+entrada real (sensor)
+processamento
+saída física (LED + buzzer)
