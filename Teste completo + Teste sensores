@@ -49,3 +49,34 @@ HALT → parada
 entrada real (sensor)
 processamento
 saída física (LED + buzzer)
+
+////////////////////////
+
+Teste led 
+
+#
+6D   → LEDON
+7D   → LEDOFF
+15D  → HALT
+#
+A
+*
+*
+*
+
+//////////
+
+
+TESTE DO BUZZER
+
+Digite no teclado:
+
+#
+8D   → BUZON
+9D   → BUZOFF
+15D  → HALT
+#
+A
+*
+*
+*
