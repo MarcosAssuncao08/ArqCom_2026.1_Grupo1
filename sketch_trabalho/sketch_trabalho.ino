@@ -6,7 +6,7 @@
 const byte ROWS = 4;
 const byte COLS = 4;
 
-char mapaTeclas[4][4] = {
+char mapaTeclas[ROWS][COLS] = {
   { '1', '2', '3', 'A' },
   { '4', '5', '6', 'B' },
   { '7', '8', '9', 'C' },
@@ -32,7 +32,7 @@ Keypad teclado = Keypad(makeKeymap(mapaTeclas), rowPins, colPins, ROWS, COLS);
 #define BUZZER 5
 
 // display (a-g)
-int displayPins[7] = {22,23,24,25,26,27,28};
+int displayPins[7] = { 22, 23, 24, 25, 26, 27, 28 };
 
 // ============================
 // ARQUITETURA
@@ -62,27 +62,27 @@ String bufferEntrada = "";
 
 // ============================
 const char* MNEMONICOS[16] = {
-  "NOP","READ","LOADK","ADDK","SUBK","CMPK",
-  "LEDON","LEDOFF","BUZON","BUZOFF",
-  "DISP","ALERT","BINC","STORE","LOADM","HALT"
+  "NOP", "READ", "LOADK", "ADDK", "SUBK", "CMPK",
+  "LEDON", "LEDOFF", "BUZON", "BUZOFF",
+  "DISP", "ALERT", "BINC", "STORE", "LOADM", "HALT"
 };
 
 // ============================
 // DISPLAY (0-9, E, -)
 // ============================
 byte numeros[12][7] = {
-  {1,1,1,1,1,1,0}, //0
-  {0,1,1,0,0,0,0}, //1
-  {1,1,0,1,1,0,1}, //2
-  {1,1,1,1,0,0,1}, //3
-  {0,1,1,0,0,1,1}, //4
-  {1,0,1,1,0,1,1}, //5
-  {1,0,1,1,1,1,1}, //6
-  {1,1,1,0,0,0,0}, //7
-  {1,1,1,1,1,1,1}, //8
-  {1,1,1,1,0,1,1}, //9
-  {1,0,0,1,1,1,1}, //E
-  {0,0,0,0,0,0,1}  // -
+  { 1, 1, 1, 1, 1, 1, 0 },  //0
+  { 0, 1, 1, 0, 0, 0, 0 },  //1
+  { 1, 1, 0, 1, 1, 0, 1 },  //2
+  { 1, 1, 1, 1, 0, 0, 1 },  //3
+  { 0, 1, 1, 0, 0, 1, 1 },  //4
+  { 1, 0, 1, 1, 0, 1, 1 },  //5
+  { 1, 0, 1, 1, 1, 1, 1 },  //6
+  { 1, 1, 1, 0, 0, 0, 0 },  //7
+  { 1, 1, 1, 1, 1, 1, 1 },  //8
+  { 1, 1, 1, 1, 0, 1, 1 },  //9
+  { 1, 0, 0, 1, 1, 1, 1 },  //E
+  { 0, 0, 0, 0, 0, 0, 1 }   // -
 };
 
 // ============================
@@ -100,7 +100,7 @@ void setup() {
 
   pinMode(BUZZER, OUTPUT);
 
-  for(int i=0;i<7;i++) pinMode(displayPins[i], OUTPUT);
+  for (int i = 0; i < 7; i++) pinMode(displayPins[i], OUTPUT);
 
   Serial.println("Sistema pronto");
 }
@@ -166,8 +166,7 @@ void loop() {
         }
 
         bufferEntrada = "";
-      } 
-      else {
+      } else {
         // Monta a instrução
         bufferEntrada += tecla;
       }
@@ -206,17 +205,25 @@ void cicloInstrucao() {
 // ============================
 void executarInstrucao(int opcode, const String& op) {
 
-  switch(opcode) {
+  switch (opcode) {
 
     case 1: ACC = lerSensor(); break;
 
-    case 2: if(ehNumerico(op)) ACC = op.toInt(); break;
+    case 2:
+      if (ehNumerico(op)) ACC = op.toInt();
+      break;
 
-    case 3: if(ehNumerico(op)) ACC += op.toInt(); break;
+    case 3:
+      if (ehNumerico(op)) ACC += op.toInt();
+      break;
 
-    case 4: if(ehNumerico(op)) ACC -= op.toInt(); break;
+    case 4:
+      if (ehNumerico(op)) ACC -= op.toInt();
+      break;
 
-    case 5: if(ehNumerico(op)) FLAG_Z = (ACC == op.toInt()); break;
+    case 5:
+      if (ehNumerico(op)) FLAG_Z = (ACC == op.toInt());
+      break;
 
     case 6: digitalWrite(LED1, HIGH); break;
 
@@ -232,13 +239,18 @@ void executarInstrucao(int opcode, const String& op) {
 
     case 12: Serial.println(IR, BIN); break;
 
-    case 13: if(ehNumerico(op)) MEM[op.toInt()] = ACC; break;
+    case 13:
+      if (ehNumerico(op)) MEM[op.toInt()] = ACC;
+      break;
 
-    case 14: if(ehNumerico(op)) ACC = MEM[op.toInt()]; break;
+    case 14:
+      if (ehNumerico(op)) ACC = MEM[op.toInt()];
+      break;
 
-    case 15: digitalWrite(LED1, LOW);
-  digitalWrite(BUZZER, LOW);
-  break;
+    case 15:
+      digitalWrite(LED1, LOW);
+      digitalWrite(BUZZER, LOW);
+      break;
   }
 }
 
@@ -298,7 +310,7 @@ void mostrarDisplay(int valor) {
 }
 
 void desenhar(int n) {
-  for(int i=0;i<7;i++)
+  for (int i = 0; i < 7; i++)
     digitalWrite(displayPins[i], numeros[n][i]);
 }
 
@@ -326,19 +338,19 @@ InstrucaoInterpretada interpretarInstrucao(const String& seq) {
 
   String s = seq;
 
-  s.replace("#"," ");
-  s.replace("B"," "); 
+  s.replace("#", " ");
+  s.replace("B", " ");
 
   s.trim();
 
   int sp = s.indexOf(' ');
-  String op = (sp==-1)?s:s.substring(0,sp);
-  String arg = (sp==-1)?"":s.substring(sp+1);
+  String op = (sp == -1) ? s : s.substring(0, sp);
+  String arg = (sp == -1) ? "" : s.substring(sp + 1);
 
-  if(!ehNumerico(op)) return r;
+  if (!ehNumerico(op)) return r;
 
   int opcode = op.toInt();
-  if(opcode<0||opcode>15) return r;
+  if (opcode < 0 || opcode > 15) return r;
 
   r.valida = true;
   r.opcode = opcode;
@@ -348,8 +360,8 @@ InstrucaoInterpretada interpretarInstrucao(const String& seq) {
 }
 
 bool ehNumerico(const String& s) {
-  if (s.length()==0) return false;
-  for(int i=0;i<s.length();i++)
-    if(!isDigit(s[i])) return false;
+  if (s.length() == 0) return false;
+  for (int i = 0; i < s.length(); i++)
+    if (!isDigit(s[i])) return false;
   return true;
 }
