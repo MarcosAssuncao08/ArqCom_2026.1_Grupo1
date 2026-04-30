@@ -1,7 +1,7 @@
 ### Manual do Usuário — Interpretador de Instruções (Arduino Mega 2560)
 
 **Resumo rápido**  
-O protótipo implementa um interpretador de instruções com **modo LOAD** (entrada de programa) e **modo RUN** (execução passo a passo). O modo LOAD é ativado pelo caractere `#` e permite armazenar instruções em memória de programa; o RUN inicia a execução controlada pelo contador de programa.
+O protótipo implementa um interpretador de instruções com **modo LOAD** (entrada de programa) e **modo RUN** (execução passo a passo). O modo LOAD é ativado pelo caractere `#` e permite armazenar instruções em memória de programa; o RUN é ativado pela tecla `A` e inicia a execução controlada pelo contador de programa.
 
 ---
 
@@ -24,7 +24,7 @@ O protótipo implementa um interpretador de instruções com **modo LOAD** (entr
    - **Formato por instrução**: `#opcode#operando#`
    - **Operando opcional**: para instruções sem operando use `#opcode##` (duplo `#`).
    - Exemplo: `#2#6#` → armazena `LOADK 6`. O Serial exibirá o mnemônico correspondente.
-4. **HALT obrigatório**: inclua `#15#` como última instrução do programa; ao armazenar `15` o LOAD é finalizado automaticamente e o Serial mostrará **Fim LOAD**.
+4. **HALT obrigatório**: inclua `#15##` como última instrução do programa; ao armazenar `HALT` o LOAD é finalizado automaticamente e o Serial mostrará **Fim LOAD**.
 
 #### 2.2 Iniciar RUN e executar passo a passo
 
@@ -42,10 +42,10 @@ Cada instrução é informada por seu **opcode decimal**. Abaixo o mnemônico, c
 | Opcode | Mnemônico  | O que faz                                             | Exemplo no LOAD                 |
 | -----: | ---------- | ----------------------------------------------------- | ------------------------------- |
 |      0 | **NOP**    | Não faz nada                                          | `#0##`                          |
-|      1 | **READ**   | Lê sensor ultrassônico; resultado em **ACC**          | `#1##`                          |
+|      1 | **READ**   | Lê sensor ultrassônico; resultado vai pro **ACC**     | `#1##`                          |
 |      2 | **LOADK**  | Carrega constante em **ACC**                          | `#2#6#` → ACC = 6               |
-|      3 | **ADDK**   | Soma constante a **ACC**                              | `#3#3#` → ACC += 3              |
-|      4 | **SUBK**   | Subtrai constante de **ACC**                          | `#4#2#` → ACC -= 2              |
+|      3 | **ADDK**   | Soma constante ao conteúdo do **ACC**                 | `#3#3#` → ACC += 3              |
+|      4 | **SUBK**   | Subtrai constante do conteúdo **ACC**                 | `#4#2#` → ACC -= 2              |
 |      5 | **CMPK**   | Compara ACC com constante; atualiza **FLAG_Z**        | `#5#10#` → FLAG_Z = (ACC == 10) |
 |      6 | **LEDON**  | Liga LED especificado pelo operando (1,2 ou 3)        | `#6#1#` → liga LED1             |
 |      7 | **LEDOFF** | Desliga LED especificado (1,2 ou 3)                   | `#7#1#` → desliga LED1          |
@@ -130,7 +130,7 @@ Os operandos **não** representam pinos físicos do Arduino; representam **índi
 #### Teste 9 — HALT (F11)
 
 - **Objetivo**: encerrar execução.
-- **Procedimento**: inclua `#15#` no final do programa; em RUN execute até HALT; verifique que novos `*` não têm efeito até novo `A`.
+- **Procedimento**: inclua `#15##` no final do programa; em RUN execute até HALT; verifique que novos `*` não têm efeito até novo `A`.
 
 ---
 
@@ -138,10 +138,8 @@ Os operandos **não** representam pinos físicos do Arduino; representam **índi
 
 - **Por que `LEDON 1` e não o pino?** — o operando identifica o **dispositivo lógico** (LED1, LED2, LED3). O mapeamento para pinos é fixo no sketch (LED1 → pino 42). Isso mantém a ISA independente da pinagem física.
 - **Nada aparece no display após `DISP`** — verifique se **ACC** contém um valor válido antes de `DISP`. Use `LOADK` ou `READ`/`LOADM` para preencher ACC.
-- **Teclas não são reconhecidas** — confira conexões do teclado (pinos 30–37) e que o Keypad está corretamente alimentado.
-- **Sensor sem leitura (timeout)** — se `pulseIn` retornar 0 o Serial mostrará timeout; verifique fiação TRIG/ECHO e alimentação do sensor.
 - **Programa não executa `*`** — confirme que pressionou `A` para iniciar RUN; `*` só executa instruções quando `EXECUTANDO == true`.
-- **Memória cheia** — máximo 16 instruções; o sistema avisa se tentar armazenar mais.
+- **Memória cheia** — máximo de 16 instruções; o sistema avisa se tentar armazenar mais.
 
 ---
 
@@ -169,13 +167,3 @@ Os operandos **não** representam pinos físicos do Arduino; representam **índi
 10. Pressione `*` → executa `HALT`, execução encerrada.
 
 ---
-
-### 10. Observações finais para a apresentação
-
-- Durante a demonstração, aponte no sketch onde estão implementados **MEM**, **PC**, **IR**, **ACC**, **UC** (funções de ciclo e controle) e **ULA** (funções aritméticas e comparação).
-- Explique a separação entre **memória de programa** (`programa[]`) e **memória de dados** (`MEM[]`).
-- Mostre os testes listados na seção 6 na ordem solicitada pelo professor.
-
----
-
-Se quiser, eu transformo este manual em um arquivo `.txt` formatado pronto para download (com título, instruções e exemplos) ou adapto o texto para um `README.md` com imagens e diagramas de pinagem.
